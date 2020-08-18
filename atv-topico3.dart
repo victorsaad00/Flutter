@@ -8,6 +8,12 @@ Abstração: É o conceito e abstrair algo do mundo real para a programação, a
 
 Polimorfismo: É o conceito de uma classe ter métodos que são herdados de classes superiores porém, para essa classe, o método age de forma diferente através da sobrescrição desse método. Esse método pode ter um retorno diferente (mas não tipo de retorno diferente - se a classe pai retorna String, a sobrescrição do metodo deve retornas uma String), uma aplicação diferente, etc. Por exemplo, o método makeNoise trabalha de forma diferente para todas as classes. 
 
+
+fontes:
+https://www.guj.com.br/t/definicoes-sobre-orientacao-a-objetos/321141
+https://www.devmedia.com.br/os-4-pilares-da-programacao-orientada-a-objetos/9264
+"Java OOPs Concepts | Object Oriented Programming | Java Tutorial For Beginners | Edureka" : https://www.youtube.com/watch?v=7GwptabrYyk
+
 */
 
 class Animal {
