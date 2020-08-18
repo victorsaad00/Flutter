@@ -1,3 +1,7 @@
+/** 
+REFERING TO THE ONLINE FLUTTER COURSE.
+**/
+
 import 'package:flutter/material.dart';
 
 void main() {
