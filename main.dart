@@ -1,3 +1,5 @@
+// Adicionada a funcao _generateHyperClick(), que gera um numero random de clicks. A pessoa perde ou ganha.
+
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
