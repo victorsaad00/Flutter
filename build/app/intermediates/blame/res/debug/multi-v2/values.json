@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "D:\\Code\\AndroidStudioProjects\\dsi_app\\build\\app\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
+            "outputFile": "C:\\Projetos\\dsi_app\\build\\app\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
             "map": [
                 {
-                    "source": "D:\\Code\\AndroidStudioProjects\\dsi_app\\android\\app\\src\\main\\res\\values\\styles.xml",
+                    "source": "C:\\Projetos\\dsi_app\\android\\app\\src\\main\\res\\values\\styles.xml",
                     "from": {
                         "startLines": "3,14",
                         "startColumns": "4,4",
