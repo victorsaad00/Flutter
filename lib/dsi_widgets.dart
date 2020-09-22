@@ -20,9 +20,9 @@ class DsiScaffold extends StatelessWidget {
   //parâmetro é obrigatório.
   DsiScaffold(
       {@required this.body,
-      this.title,
-      this.floatingActionButton,
-      this.showAppBar = true});
+        this.title,
+        this.floatingActionButton,
+        this.showAppBar = true});
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ class DsiScaffold extends StatelessWidget {
             alignment: Alignment.bottomRight,
             child: Text(
               '''por Gabriel Alves\n'''
-              '''contato: gabriel.alves@ufrpe.br''',
+                  '''contato: gabriel.alves@ufrpe.br''',
               textAlign: TextAlign.right,
               style: themeData.textTheme.caption.copyWith(
                 fontSize: 12.0,
@@ -188,9 +188,9 @@ class DsiBasicFormPage extends StatefulWidget {
   final hideButtons;
   DsiBasicFormPage(
       {@required this.title,
-      @required this.body,
-      this.onSave,
-      this.hideButtons = false});
+        @required this.body,
+        this.onSave,
+        this.hideButtons = false});
 
   @override
   DsiBasicFormPageState createState() => DsiBasicFormPageState();

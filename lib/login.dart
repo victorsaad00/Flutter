@@ -4,7 +4,9 @@ import 'package:dsi_app/infra.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+
 import 'dsi_widgets.dart';
+
 
 class LoginPage extends StatelessWidget {
   @override
@@ -28,7 +30,7 @@ class LoginPage extends StatelessWidget {
                 padding: Constants.insetsMedium,
                 child: Text(
                   'App desenvolvido por Gabriel Alves para a disciplina de'
-                  ' Desenvolvimento de Sistemas de Informação do BSI/UFRPE.',
+                      ' Desenvolvimento de Sistemas de Informação do BSI/UFRPE.',
                   style: Theme.of(context)
                       .textTheme
                       .caption

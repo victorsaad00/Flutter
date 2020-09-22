@@ -1,11 +1,9 @@
-import 'dart:convert';
-
-import 'package:dsi_app/Professor.dart';
 import 'package:dsi_app/aluno.dart';
 import 'package:dsi_app/constants.dart';
 import 'package:dsi_app/home.dart';
 import 'package:dsi_app/login.dart';
 import 'package:dsi_app/pessoa.dart';
+import 'package:dsi_app/professor.dart';
 import 'package:dsi_app/register.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -130,23 +128,8 @@ class DSIApp extends StatelessWidget {
       '/maintain_pessoa': (context) => MaintainPessoaPage(),
       '/list_aluno': (context) => ListAlunoPage(),
       '/maintain_aluno': (context) => MaintainAlunoPage(),
-      '/maintain_professor': (context) => MaintainProfessorPage(),
       '/list_professor': (context) => ListProfessorPage(),
+      '/maintain_professor': (context) => MaintainProfessorPage(),
     };
   }
 }
-/*
-void _initDb(context) {
-  Future<String> data = DefaultAssetBundle.of(context).loadString('db.json');
-  data.then((value) => _processData(value));
-}
-
-_processData(jsonString) {
-  Map<String, dynamic> jsonMaps = jsonDecode(jsonString);
-  jsonMaps['alunos']
-      .map<Aluno>((json) => Aluno.fromJson(json))
-      .toList()
-      .forEach((aluno) => alunoController.save(aluno));
-}
-*/
-

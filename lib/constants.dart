@@ -25,3 +25,5 @@ class Images {
   static final AssetImage bsiLogoBlack =
       AssetImage('images/logo/bsi-black.png');
 }
+
+

@@ -85,7 +85,7 @@ class Estado {
 }
 
 class Endereco {
-  String id;
+  int id;
   String logradouro, numero, bairro, cidade, cep;
   Estado estado = Estado.AC;
 
@@ -124,8 +124,9 @@ class Endereco {
   };
 }
 
-class Pessoa {
-  String id, cpf, nome;
+abstract class Pessoa {
+  int id;
+  String cpf, nome;
   Endereco endereco;
   Pessoa({this.id, this.cpf, this.nome, this.endereco}) {
     if (endereco == null) endereco = Endereco();
@@ -166,10 +167,10 @@ class PessoaController {
     );
   }
 
-  Future<Pessoa> getById(String id) async {
+  Future<Pessoa> getById(int id) async {
     return dsiHelper.getJson<Pessoa>(
-      'pessoas/$id',
-          (json) => Pessoa.fromJson(json),
+      'alunos/$id',
+          (json) => Aluno.fromJson(json),
     );
   }
 
@@ -194,14 +195,12 @@ class PessoaController {
 
   Future<Pessoa> save(pessoa) async {
     validateOnSave(pessoa);
-    //FIXME
-    return null;
-    // return dsiHelper.putJson(
-    //   'alunos',
-    //   pessoa.id,
-    //   (json) => Aluno.fromJson(json),
-    //   pessoa.toJson(),
-    // );
+    return dsiHelper.putJson(
+      'alunos',
+      pessoa.id,
+          (json) => Aluno.fromJson(json),
+      pessoa.toJson(),
+    );
   }
 
   Future<bool> remove(pessoa) async {

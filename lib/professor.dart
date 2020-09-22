@@ -4,38 +4,39 @@ import 'package:dsi_app/infra.dart';
 import 'package:dsi_app/pessoa.dart';
 import 'package:flutter/material.dart';
 
-class Professor {
+import 'dsi_widgets.dart';
+import 'pessoa.dart';
+
+
+class Professor extends Pessoa {
 
   String codID;
-  Pessoa pessoa;
 
-  Professor({this.codID, this.pessoa});
-
+  //Construtor da classe Professor.
+  Professor({cpf, nome, endereco, this.codID})
+      : super(cpf: cpf, nome: nome, endereco: endereco);
 
   Professor.fromJson(Map<String, dynamic> json)
       : codID = json['codID'],
-        pessoa = Pessoa.fromJson(json['pessoa']);
+        super.fromJson(json);
 
   ///TIP este método converte o objeto atual para um mapa que representa um
   ///objeto JSON.
-  Map<String, dynamic> toJson() =>
-    {
+  Map<String, dynamic> toJson() => super.toJson()
+    ..addAll({
       'codID': codID,
-      'id':pessoa.id,
-    };
+    });
 
 } // End class Professor
+
+
 var professorController = ProfessorController();
 
-class ProfessorController {
+class ProfessorController{
 
   Future<List<Professor>> getAll() async {
-    List<Pessoa> professores = await pessoaController.getAll();
-    return professores.whereType<Professor>().toList();
-  }
-
-  Future<Pessoa> getById(String id) async {
-    return pessoaController.getById(id);
+    List<Pessoa> result = await pessoaController.getAll();
+    return result.whereType<Professor>().toList();
   }
 
   Future<Professor> save(Professor professor) async {
@@ -47,12 +48,14 @@ class ProfessorController {
   Future<bool> remove(Professor professor) async {
     return pessoaController.remove(professor);
   }
-}
+} // End class ProfessorController
+
 
 class ListProfessorPage extends StatefulWidget {
   @override
   ListProfessorPageState createState() => ListProfessorPageState();
 }
+
 class ListProfessorPageState extends State<ListProfessorPage>{
 
   Future<List<Professor>> _professor;
@@ -66,27 +69,27 @@ class ListProfessorPageState extends State<ListProfessorPage>{
   @override
   Widget build(BuildContext context) {
     return DsiScaffold(
-      title: 'Listagem de Professores',
+      title: 'Listagem de professores',
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () => dsiHelper.go(context, '/maintain_professor'),
       ),
       body: FutureBuilder(
           future: _professor,
-          builder: (context, snapshot){
-            if(!snapshot.hasData){
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
               return Center(child: CircularProgressIndicator());
             }
-            var professores = snapshot.data;
+            var professor = snapshot.data;
             return ListView.builder(
               shrinkWrap: true,
               scrollDirection: Axis.vertical,
-              itemCount: professores.length,
+              // physics: NeverScrollableScrollPhysics(),
+              itemCount: professor.length,
               itemBuilder: (context, index) =>
-                  _buildListTileProfessor(context, professores[index]),
+                  _buildListTileProfessor(context, professor[index]),
             );
-          }
-      ),
+          }),
     );
   }
 
@@ -134,14 +137,14 @@ class MaintainProfessorPage extends StatelessWidget {
     return DsiBasicFormPage(
       title: 'Professor',
       onSave: () {
-
+        professorController.save(professor);
         dsiHelper.go(context, '/list_professor');
       },
       body: Wrap(
         alignment: WrapAlignment.center,
         runSpacing: Constants.boxSmallHeight.height,
         children: <Widget>[
-          MaintainPessoaBody(professor.pessoa),
+          MaintainPessoaBody(professor),
           TextFormField(
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(labelText: 'codigo de ID*'),
@@ -156,4 +159,3 @@ class MaintainProfessorPage extends StatelessWidget {
     );
   }
 }
-

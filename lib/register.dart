@@ -93,7 +93,7 @@ class RegisterFormState extends State<RegisterForm> {
               keyboardType: TextInputType.visiblePassword,
               obscureText: true,
               decoration:
-                  const InputDecoration(labelText: 'Confirmação de Senha*'),
+              const InputDecoration(labelText: 'Confirmação de Senha*'),
               validator: (String value) {
                 return value.isEmpty
                     ? 'As senhas digitadas não são iguais.'

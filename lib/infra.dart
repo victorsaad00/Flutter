@@ -50,9 +50,9 @@ class _DsiHelper {
 
   void showAlert(
       {context,
-      message = 'Operação realizada com sucesso.',
-      title = 'Sucesso',
-      onPressed}) {
+        message = 'Operação realizada com sucesso.',
+        title = 'Sucesso',
+        onPressed}) {
     var dialog = AlertDialog(
       title: Text(title),
       content: Text(message),
