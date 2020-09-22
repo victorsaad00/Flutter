@@ -30,14 +30,13 @@ var professorController = ProfessorController();
 class ProfessorController {
 
   Future<List<Professor>> getAll() async {
-    List professores = await pessoaController.getAll();
+    List<Pessoa> professores = await pessoaController.getAll();
     return professores.whereType<Professor>().toList();
   }
 
   Future<Pessoa> getById(String id) async {
     return pessoaController.getById(id);
   }
-
 
   Future<Professor> save(Professor professor) async {
     Pessoa pessoa = await pessoaController.save(professor);
@@ -49,7 +48,6 @@ class ProfessorController {
     return pessoaController.remove(professor);
   }
 }
-
 
 class ListProfessorPage extends StatefulWidget {
   @override

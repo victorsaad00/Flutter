@@ -1,7 +1,5 @@
-import 'package:dsi_app/Professor.dart';
 import 'package:dsi_app/aluno.dart';
 import 'package:dsi_app/constants.dart';
-import 'package:dsi_app/controllers.dart';
 import 'package:dsi_app/dsi_widgets.dart';
 import 'package:dsi_app/infra.dart';
 import 'package:flutter/material.dart';
@@ -93,12 +91,12 @@ class Endereco {
 
   Endereco(
       {this.id,
-      this.logradouro,
-      this.numero,
-      this.bairro,
-      this.cidade,
-      this.estado,
-      this.cep});
+        this.logradouro,
+        this.numero,
+        this.bairro,
+        this.cidade,
+        this.estado,
+        this.cep});
 
   //TIP observe que o estado é retornado pela sua sigla, uma vez que na
   //conversão do objeto para um objeto JSON, o que é salvo é a sigla. Veja que
@@ -116,19 +114,18 @@ class Endereco {
   //a sua sigla. No construtor, basta pegar a sigla salva, e recuperar o estado
   //equivalente pela sigla.
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'logradouro': logradouro,
-        'numero': numero,
-        'bairro': bairro,
-        'cidade': cidade,
-        'estado': estado.sigla,
-        'cep': cep
-      };
+    'id': id,
+    'logradouro': logradouro,
+    'numero': numero,
+    'bairro': bairro,
+    'cidade': cidade,
+    'estado': estado.sigla,
+    'cep': cep
+  };
 }
 
 class Pessoa {
-
-  String cpf, nome, id;
+  String id, cpf, nome;
   Endereco endereco;
   Pessoa({this.id, this.cpf, this.nome, this.endereco}) {
     if (endereco == null) endereco = Endereco();
@@ -151,22 +148,21 @@ class Pessoa {
   //objeto JSON. Observe que a conversão do objeto endereço é delegada para
   //o próprio objeto, seguindo o princípio do encapsulamento.
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'cpf': cpf,
-        'nome': nome,
-        'endereco': endereco.toJson(),
-      };
+    'id': id,
+    'cpf': cpf,
+    'nome': nome,
+    'endereco': endereco.toJson(),
+  };
 }
 
 var pessoaController = PessoaController();
 
 class PessoaController {
-
   Future<List<Pessoa>> getAll() async {
     return dsiHelper.getJson<List<Pessoa>>(
-      'pessoas',
+      'alunos',
           (jsonMaps) =>
-          jsonMaps.map<Pessoa>((json) => Pessoa.fromJson(json)).toList(),
+          jsonMaps.map<Aluno>((json) => Aluno.fromJson(json)).toList(),
     );
   }
 
@@ -177,27 +173,17 @@ class PessoaController {
     );
   }
 
-
   Future<Pessoa> getByCPF(String cpf) async {
     var params = {
       'cpf': cpf,
     };
     List<Pessoa> result = await dsiHelper.getJson<List<Pessoa>>(
-      'pessoas',
+      'alunos',
           (jsonMaps) =>
-          jsonMaps.map<Aluno>((json) => Pessoa.fromJson(json)).toList(),
+          jsonMaps.map<Aluno>((json) => Aluno.fromJson(json)).toList(),
       params,
     );
     return result != null && result.isNotEmpty ? result.first : null;
-  }
-
-  Future<Pessoa> save(pessoa) async {
-    validateOnSave(pessoa);
-    return null;
-  }
-
-  Future<bool> remove(pessoa) async {
-    return dsiHelper.deleteJson('pessoas', pessoa.id);
   }
 
   void validateOnSave(pessoa) async {
@@ -206,7 +192,25 @@ class PessoaController {
       throw Exception('Já existe uma pessoa com o cpf ${pessoa.cpf}.');
   }
 
-} // End of controllerPessoa
+  Future<Pessoa> save(pessoa) async {
+    validateOnSave(pessoa);
+    //FIXME
+    return null;
+    // return dsiHelper.putJson(
+    //   'alunos',
+    //   pessoa.id,
+    //   (json) => Aluno.fromJson(json),
+    //   pessoa.toJson(),
+    // );
+  }
+
+  Future<bool> remove(pessoa) async {
+    return dsiHelper.deleteJson(
+      'alunos',
+      pessoa.id,
+    );
+  }
+}
 
 class ListPessoaPage extends StatefulWidget {
   @override
@@ -275,7 +279,7 @@ class ListPessoaPageState extends State<ListPessoaPage> {
       child: ListTile(
         title: Text(pessoa.nome),
         subtitle:
-            Text('${pessoa.endereco.cidade} - ${pessoa.endereco.estado.sigla}'),
+        Text('${pessoa.endereco.cidade} - ${pessoa.endereco.estado.sigla}'),
         onTap: () =>
             dsiHelper.go(context, "/maintain_pessoa", arguments: pessoa),
       ),

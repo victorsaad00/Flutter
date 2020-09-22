@@ -4,47 +4,38 @@ import 'package:dsi_app/infra.dart';
 import 'package:dsi_app/pessoa.dart';
 import 'package:flutter/material.dart';
 
-import 'controllers.dart';
-
-
+/// A classe aluno representa um aluno do sistema e possui uma Pessoa.
+/// Caso aluno fosse uma subclasse de pessoa (como aconteceu nos branches
+/// anteriores), não seria possível ter uma pessoa que fosse ao mesmo tempo
+/// um aluno e um professor.
+/// Assim, caso a mesma pessoa seja aluno e professor, basta que ambos registros
+/// (de aluno e de professor) apontem para a mesma pessoa.
 class Aluno {
-
-  String matricula;
+  String id, matricula;
   Pessoa pessoa;
 
-  //TIP Observe que o construtor de aluno repassa alguns dos parâmetros recebidos
-  //para o construtor da super classe (Pessoa).
-  Aluno({this.matricula, this.pessoa});
+  Aluno({this.id, this.matricula, this.pessoa});
 
   //TIP Observe que é delegada para a superclasse a conversão dos seus
   //atributos específicos. Esta chamada deve ser a última coisa a ser feita
   //no construtor.
   Aluno.fromJson(Map<String, dynamic> json)
-      : matricula = json['matricula'],
+      : id = json['id'],
+        matricula = json['matricula'],
         pessoa = Pessoa.fromJson(json['pessoa']);
 
-  Map<String, dynamic> toJson() => {
-    'matricula': this.matricula,
-    'id':pessoa.id,
-  };
-
+  ///TIP este método converte o objeto atual para um mapa que representa um
+  ///objeto JSON.
+  Map<String, dynamic> toJson() =>
+      {'id': id, 'matricula': matricula, 'id_pessoa': pessoa.id};
 }
 
 var alunoController = AlunoController();
 
 class AlunoController {
-
   Future<List<Aluno>> getAll() async {
-    List alunos = await pessoaController.getAll();
-    return alunos.whereType<Aluno>().toList();
-  }
-
-  Future<Pessoa> getById(String id) async {
-    /*return dsiHelper.getJson<Pessoa>(
-      'alunos/$id',
-          (json) => Pessoa.fromJson(json),
-    );*/
-    return pessoaController.getById(id);
+    List<Pessoa> result = await pessoaController.getAll();
+    return result.whereType<Aluno>().toList();
   }
 
   Future<Aluno> save(Aluno aluno) async {
@@ -60,8 +51,7 @@ class AlunoController {
   Future<bool> remove(Aluno aluno) async {
     return pessoaController.remove(aluno);
   }
-
-} // End of aluno Controller
+}
 
 class ListAlunoPage extends StatefulWidget {
   @override
