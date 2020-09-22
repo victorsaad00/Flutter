@@ -110,8 +110,8 @@ class DsiScaffold extends StatelessWidget {
             leading: Icon(Icons.school),
             title: Text('Professores'),
             onTap: () => dsiHelper.go(
-              context,
-              '/list_professor'
+                context,
+                '/list_professor'
             ),
           ),
           Divider(),

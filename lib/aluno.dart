@@ -4,61 +4,64 @@ import 'package:dsi_app/infra.dart';
 import 'package:dsi_app/pessoa.dart';
 import 'package:flutter/material.dart';
 
-/// A classe aluno representa um aluno do sistema e é uma subclasse de Pessoa.
-/// Assim, tudo o que Pessoa possui, um aluno também possui.
-/// E todas as operações que podem ser feitas com uma pessoa, também podem ser
-/// feitas com um aluno. Assim, todos os métodos e funções que recebiam uma
-/// Pessoa como parâmetro, também podem receber também um Aluno.
-class Aluno extends Pessoa {
+import 'controllers.dart';
+
+
+class Aluno {
+
   String matricula;
+  Pessoa pessoa;
 
   //TIP Observe que o construtor de aluno repassa alguns dos parâmetros recebidos
   //para o construtor da super classe (Pessoa).
-  Aluno({cpf, nome, endereco, this.matricula})
-      : super(cpf: cpf, nome: nome, endereco: endereco);
+  Aluno({this.matricula, this.pessoa});
 
   //TIP Observe que é delegada para a superclasse a conversão dos seus
   //atributos específicos. Esta chamada deve ser a última coisa a ser feita
   //no construtor.
   Aluno.fromJson(Map<String, dynamic> json)
       : matricula = json['matricula'],
-        super.fromJson(json);
+        pessoa = Pessoa.fromJson(json['pessoa']);
 
-  ///TIP este método converte o objeto atual para um mapa que representa um
-  ///objeto JSON. Observe que a conversão do objeto endereço é delegada para
-  ///o próprio objeto, seguindo o princípio do encapsulamento.
-  ///Observe o uso do cascade notation do flutter. Caso este atalho não fosse
-  ///usado, seria preciso criar o método com corpo, chamando o super.toJson()
-  ///e atribuindo o mapa a uma variável, em seguida adicionar as novas entradas
-  ///no mapa, para só então retornar o mapa como resultado do método:
-  ///``
-  ///var result = super.toJson();
-  ///result.addAll({
-  ///       'matricula': matricula,
-  ///     });
-  ///return result;
-  ///``
-  Map<String, dynamic> toJson() => super.toJson()
-    ..addAll({
-      'matricula': matricula,
-    });
+  Map<String, dynamic> toJson() => {
+    'matricula': this.matricula,
+    'id':pessoa.id,
+  };
+
 }
 
 var alunoController = AlunoController();
 
 class AlunoController {
-  List<Aluno> getAll() {
-    return pessoaController.getAll().whereType<Aluno>().toList();
+
+  Future<List<Aluno>> getAll() async {
+    List alunos = await pessoaController.getAll();
+    return alunos.whereType<Aluno>().toList();
   }
 
-  Aluno save(aluno) {
-    return pessoaController.save(aluno);
+  Future<Pessoa> getById(String id) async {
+    /*return dsiHelper.getJson<Pessoa>(
+      'alunos/$id',
+          (json) => Pessoa.fromJson(json),
+    );*/
+    return pessoaController.getById(id);
   }
 
-  bool remove(aluno) {
+  Future<Aluno> save(Aluno aluno) async {
+    Pessoa pessoa = await pessoaController.save(aluno);
+    //TIP aqui foi feito um cast de pessoa para aluno, para garantir que o
+    // objeto retornado é um aluno e não uma pessoa. Caso isso não fosse feito,
+    // daria uma erro no 'Future' que seria de pessoa e não de aluno, como
+    // declarado no retorno da função. A outra alternativa, seria usar o
+    // retorno dinâmico.
+    return pessoa as Aluno;
+  }
+
+  Future<bool> remove(Aluno aluno) async {
     return pessoaController.remove(aluno);
   }
-}
+
+} // End of aluno Controller
 
 class ListAlunoPage extends StatefulWidget {
   @override
@@ -66,8 +69,16 @@ class ListAlunoPage extends StatefulWidget {
 }
 
 class ListAlunoPageState extends State<ListAlunoPage> {
-  List<Aluno> _alunos = alunoController.getAll();
+  Future<List<Aluno>> _alunos;
 
+  @override
+  void initState() {
+    super.initState();
+    _alunos = alunoController.getAll();
+  }
+
+  ///TIP Como a listagem agora trabalha sobre o Future de alunos ao invés
+  ///do aluno em si, é necessário envolver o ListView em um FutureBuilder.
   @override
   Widget build(BuildContext context) {
     return DsiScaffold(
@@ -76,24 +87,32 @@ class ListAlunoPageState extends State<ListAlunoPage> {
         child: Icon(Icons.add),
         onPressed: () => dsiHelper.go(context, '/maintain_aluno'),
       ),
-      body: ListView.builder(
-        shrinkWrap: true,
-        scrollDirection: Axis.vertical,
-        // physics: NeverScrollableScrollPhysics(),
-        itemCount: _alunos.length,
-        itemBuilder: _buildListTileAluno,
-      ),
+      body: FutureBuilder(
+          future: _alunos,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              //TIP apresenta o indicador de progresso enquanto carrega a página.
+              return Center(child: CircularProgressIndicator());
+            }
+            var alunos = snapshot.data;
+            return ListView.builder(
+              shrinkWrap: true,
+              scrollDirection: Axis.vertical,
+              // physics: NeverScrollableScrollPhysics(),
+              itemCount: alunos.length,
+              itemBuilder: (context, index) =>
+                  _buildListTileAluno(context, alunos[index]),
+            );
+          }),
     );
   }
 
-  Widget _buildListTileAluno(context, index) {
-    var aluno = _alunos[index];
+  Widget _buildListTileAluno(context, aluno) {
     return Dismissible(
       key: UniqueKey(),
       onDismissed: (direction) {
         setState(() {
           alunoController.remove(aluno);
-          _alunos.remove(index);
         });
         dsiHelper.showMessage(
           context: context,
@@ -139,7 +158,7 @@ class MaintainAlunoPage extends StatelessWidget {
         alignment: WrapAlignment.center,
         runSpacing: Constants.boxSmallHeight.height,
         children: <Widget>[
-          MaintainPessoaBody(aluno),
+          MaintainPessoaBody(aluno.pessoa),
           TextFormField(
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(labelText: 'Matrícula*'),

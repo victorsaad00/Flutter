@@ -1,4 +1,7 @@
+import 'package:dsi_app/Professor.dart';
+import 'package:dsi_app/aluno.dart';
 import 'package:dsi_app/constants.dart';
+import 'package:dsi_app/controllers.dart';
 import 'package:dsi_app/dsi_widgets.dart';
 import 'package:dsi_app/infra.dart';
 import 'package:flutter/material.dart';
@@ -84,12 +87,13 @@ class Estado {
 }
 
 class Endereco {
-  int id;
+  String id;
   String logradouro, numero, bairro, cidade, cep;
   Estado estado = Estado.AC;
 
   Endereco(
-      {this.logradouro,
+      {this.id,
+      this.logradouro,
       this.numero,
       this.bairro,
       this.cidade,
@@ -100,7 +104,8 @@ class Endereco {
   //conversão do objeto para um objeto JSON, o que é salvo é a sigla. Veja que
   //no método toJson o que é incluído no mapa é a sigla.
   Endereco.fromJson(Map<String, dynamic> json)
-      : logradouro = json['logradouro'],
+      : id = json['id'],
+        logradouro = json['logradouro'],
         numero = json['numero'],
         bairro = json['bairro'],
         cidade = json['cidade'],
@@ -111,6 +116,7 @@ class Endereco {
   //a sua sigla. No construtor, basta pegar a sigla salva, e recuperar o estado
   //equivalente pela sigla.
   Map<String, dynamic> toJson() => {
+        'id': id,
         'logradouro': logradouro,
         'numero': numero,
         'bairro': bairro,
@@ -120,9 +126,9 @@ class Endereco {
       };
 }
 
-abstract class Pessoa {
-  int id;
-  String cpf, nome;
+class Pessoa {
+
+  String cpf, nome, id;
   Endereco endereco;
   Pessoa({this.id, this.cpf, this.nome, this.endereco}) {
     if (endereco == null) endereco = Endereco();
@@ -155,63 +161,52 @@ abstract class Pessoa {
 var pessoaController = PessoaController();
 
 class PessoaController {
-  var _nextId = 1;
-  var _pessoas = <Pessoa>[];
 
-  List<Pessoa> getAll() {
-    return _pessoas;
+  Future<List<Pessoa>> getAll() async {
+    return dsiHelper.getJson<List<Pessoa>>(
+      'pessoas',
+          (jsonMaps) =>
+          jsonMaps.map<Pessoa>((json) => Pessoa.fromJson(json)).toList(),
+    );
   }
 
-  Pessoa getByCPF(String cpf) {
-    for (Pessoa p in _pessoas) {
-      if (p.cpf == cpf) return p;
-    }
+  Future<Pessoa> getById(String id) async {
+    return dsiHelper.getJson<Pessoa>(
+      'pessoas/$id',
+          (json) => Pessoa.fromJson(json),
+    );
+  }
+
+
+  Future<Pessoa> getByCPF(String cpf) async {
+    var params = {
+      'cpf': cpf,
+    };
+    List<Pessoa> result = await dsiHelper.getJson<List<Pessoa>>(
+      'pessoas',
+          (jsonMaps) =>
+          jsonMaps.map<Aluno>((json) => Pessoa.fromJson(json)).toList(),
+      params,
+    );
+    return result != null && result.isNotEmpty ? result.first : null;
+  }
+
+  Future<Pessoa> save(pessoa) async {
+    validateOnSave(pessoa);
     return null;
   }
 
-  void _validateOnSave(pessoa) {
-    Pessoa p = getByCPF(pessoa.cpf);
+  Future<bool> remove(pessoa) async {
+    return dsiHelper.deleteJson('pessoas', pessoa.id);
+  }
+
+  void validateOnSave(pessoa) async {
+    Pessoa p = await getByCPF(pessoa.cpf);
     if (p != null && p.id != pessoa.id)
       throw Exception('Já existe uma pessoa com o cpf ${pessoa.cpf}.');
   }
 
-  Pessoa save(pessoa) {
-    _validateOnSave(pessoa);
-    //Lógica:
-    //1) se a pessoa não possui id, está inserindo.
-    //2) se a pessoa tem id e o id não está na lista do banco, está inserindo
-    //3) caso contrário, está alterando.
-    //
-    //No caso 2, altera o próximo ID para o máximo entre o id da pessoa
-    //e o atual;
-    //
-    //No caso 3, substitui a pessoa da lista, na mesma posição.
-    if (pessoa.id == null) {
-      pessoa.id = _nextId++;
-      pessoa.endereco.id = pessoa.id;
-      _pessoas.add(pessoa);
-    } else {
-      var idx = _pessoas.indexWhere((element) => element.id == pessoa.id);
-      if (idx == -1) {
-        _pessoas.add(pessoa);
-        _nextId = pessoa.id > _nextId ? pessoa.id + 1 : _nextId + 1;
-      } else {
-        _pessoas.setRange(idx, idx + 1, [pessoa]);
-      }
-    }
-    return pessoa;
-  }
-
-  bool remove(pessoa) {
-    var result = false;
-    var idx = _pessoas.indexWhere((element) => element.id == pessoa.id);
-    if (idx != -1) {
-      result = true;
-      _pessoas.removeAt(idx);
-    }
-    return result;
-  }
-}
+} // End of controllerPessoa
 
 class ListPessoaPage extends StatefulWidget {
   @override
@@ -219,29 +214,46 @@ class ListPessoaPage extends StatefulWidget {
 }
 
 class ListPessoaPageState extends State<ListPessoaPage> {
-  List<Pessoa> _pessoas = pessoaController.getAll();
+  Future<List<Pessoa>> _pessoas;
+
+  ///TIP O estado dos componentes stateful devem ser inicializados
+  ///no método initState.
+  @override
+  void initState() {
+    super.initState();
+    _pessoas = pessoaController.getAll();
+  }
 
   @override
   Widget build(BuildContext context) {
     return DsiScaffold(
       title: 'Listagem de Pessoas',
-      body: ListView.builder(
-        shrinkWrap: true,
-        scrollDirection: Axis.vertical,
-        itemCount: _pessoas.length,
-        itemBuilder: _buildListTilePessoa,
+      body: FutureBuilder(
+        future: _pessoas,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            //TIP apresenta o indicador de progresso enquanto carrega a página.
+            return Center(child: CircularProgressIndicator());
+          }
+          var pessoas = snapshot.data;
+          return ListView.builder(
+            shrinkWrap: true,
+            scrollDirection: Axis.vertical,
+            itemCount: pessoas.length,
+            itemBuilder: (context, index) =>
+                _buildListTilePessoa(context, pessoas[index]),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildListTilePessoa(context, index) {
-    var pessoa = _pessoas[index];
+  Widget _buildListTilePessoa(context, pessoa) {
     return Dismissible(
       key: UniqueKey(),
       onDismissed: (direction) {
         setState(() {
           pessoaController.remove(pessoa);
-          _pessoas.remove(index);
         });
         dsiHelper.showMessage(
           context: context,
